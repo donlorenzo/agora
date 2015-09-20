@@ -1,0 +1,27 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- accept Agora messages -->
+        <filter class="de.lorenzquack.code.agora.core.logging.NameAndLevelFilter">
+            <loggerName>de.lorenzquack.code.*</loggerName>
+            <level>DEBUG</level>
+        </filter>
+        <!-- reduce jetty noise -->
+        <filter class="de.lorenzquack.code.agora.core.logging.NameAndLevelFilter">
+            <loggerName>org.eclipse.jetty.*</loggerName>
+            <level>WARN</level>
+        </filter>
+        <!-- catch all -->
+        <filter class="de.lorenzquack.code.agora.core.logging.NameAndLevelFilter">
+            <loggerName>.*</loggerName>
+            <level>ERROR</level>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="trace">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

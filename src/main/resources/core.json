@@ -1,0 +1,17 @@
+{
+  "network": {},
+  "plugins": {},
+  "ui": {
+    "username" : "admin"
+  },
+  "adaptors": {
+    "ui": {
+      "rest": {
+        "port" : 8080
+      }
+    },
+    "network": {
+      "tcp": {}
+    }
+  }
+}

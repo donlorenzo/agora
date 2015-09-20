@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2015 by Lorenz Quack
+
+ This file is part of agora.
+
+     agora is free software: you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published by
+     the Free Software Foundation, either version 2 of the License, or
+     (at your option) any later version.
+
+     agora is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with agora.  If not, see <http://www.gnu.org/licenses/>.
+//-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Agora - Developer Documentation</title>
+</head>
+<body>
+<h1>Agora - Developer Documentation</h1>
+
+<h2>Introduction</h2>
+
+<h2>High-Level Design</h2>
+Agora's main component is called the core. It interacts with the outside world through several API interfaces:
+<ul>
+  <li><a href="#ui_api">UI API</a></li>
+  <li><a href="#plugin_api">Plugin API</a></li>
+  <li><a href="#config_api">Configuration API</a></li>
+  <li><a href="#file_api">File Access API</a></li>
+</ul>
+In addition agora defines a <a href="#binary_wire_protocol">binary protocol</a> with which it communicates with other agora instances.
+
+<h3 id="ui_api">The UI API</h3>
+The UI API consists of two parts
+<ul>
+  <li>Core UI API</li>
+  <li>Client UI API</li>
+</ul>
+The Agora core implements the Core UI API and injects itself into the client which in turn must implement the Client UI API.
+
+<h4>The Core UI API</h4>
+The Core UI API exposes Agora's administrative functionality to the Client UI Adapter.
+
+<h4>The Client UI API</h4>
+The Client UI API must be implemented by Client UI Adapters to be able to be loaded by the Agora Core.
+It provides functionality to inform the UI about changes in the core.
+
+<h3 id="plugin_api">The Plugin API</h3>
+The Plugin API consists of two parts
+<ul>
+  <li>Core Plugin API</li>
+  <li>Client Plugin API</li>
+</ul>
+The Agora core implements the Core Plugin API and injects itself into the client which in turn must implement the Client Plugin API.
+
+<h4>The Core Plugin API</h4>
+Agora exposes certain functionality to Plugins through the Core Plugin API. This includes
+<ul>
+  <li>opening a connection to a remote Agora node</li>
+  <li>sending/receiving data to/from a remote Agora node</li>
+  <li>adding Plugin specific controls to the UI and keeping it up to date</li>
+</ul>
+
+<h4>The Client Plugin API</h4>
+TODO
+
+<h3 id="file_api">The File API</h3>
+TODO
+
+<h2 id="binary_wire_protocol">Binary Wire Protocol</h2>
+TODO
+
+<p>&nbsp;</p>
+
+</body>
+</html>
