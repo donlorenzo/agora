@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.lorenzquack.code.agora.core.api.ConfigurationStoreAdaptor;
 import de.lorenzquack.code.agora.core.api.JSONConfig;
 
 

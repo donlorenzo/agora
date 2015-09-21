@@ -43,7 +43,7 @@ import de.lorenzquack.code.agora.core.api.NetworkPort;
 import de.lorenzquack.code.agora.core.api.PluginPort;
 import de.lorenzquack.code.agora.core.api.UIAdaptor;
 import de.lorenzquack.code.agora.core.api.UIPort;
-import de.lorenzquack.code.agora.core.config.ConfigurationStoreAdaptor;
+import de.lorenzquack.code.agora.core.api.ConfigurationStoreAdaptor;
 import de.lorenzquack.code.agora.core.config.ConfigurationStoreAdaptorJSONFile;
 import de.lorenzquack.code.agora.core.network.NetworkAdaptorTCP;
 import de.lorenzquack.code.agora.core.network.NetworkPortImpl;
@@ -169,16 +169,17 @@ public class AgoraCore {
 
     private void mainLoop() {
         while (!_quit) {
+/*
             LOGGER.debug("MainThread still spinning");
 
             Object authToken = _uiPort.login("admin", "admin");
             LOGGER.debug(_uiPort.getVersionString(authToken));
             _uiPort.logout(authToken);
-
+*/
             try {
                 Thread.currentThread().sleep(500);
             } catch (InterruptedException e) {
-                break;
+                shutdown();
             }
         }
         LOGGER.debug("byebye");
