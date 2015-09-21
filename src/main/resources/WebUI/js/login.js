@@ -18,5 +18,7 @@
  */
 
 login = function() {
-    alert("hallo");
+    var username = $("#username")[0].value;
+    var password = $("#password")[0].value;
+    POST("login", {"username": username, "password": password}, function(data){alert(data);}, function(_, _, exc){alert("oh no: " + exc);});
 }

@@ -27,18 +27,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.lorenzquack.code.agora.core.AgoraCore;
 import de.lorenzquack.code.agora.core.api.JSONConfig;
 import de.lorenzquack.code.agora.core.api.UIAdaptor;
 import de.lorenzquack.code.agora.core.api.UIPort;
+import de.lorenzquack.code.agora.core.api.exceptions.AuthenticationException;
 
 
 public class UIAdapterREST implements UIAdaptor {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AgoraCore.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UIAdapterREST.class);
 
     private UIPort _core;
     private Server _server;
@@ -57,10 +58,12 @@ public class UIAdapterREST implements UIAdaptor {
         _config = config;
         int port = config.get("port").asInt();
         _server = new Server(port);
-        ServletHandler servletHandler = new ServletHandler();
+        ServletContextHandler servletHandler = new ServletContextHandler();// ServletHandler();
         _server.setHandler(servletHandler);
-        servletHandler.addServletWithMapping(RESTHandler.class, "/api/*");
-        servletHandler.addServletWithMapping(StaticHandler.class, "/*");
+        servletHandler.addServlet(new ServletHolder(new RESTHandler(_core)), "/api/*");
+        servletHandler.addServlet(new ServletHolder(new StaticHandler()), "/*");
+        //servletHandler.addServletWithMapping(RESTHandler.class, "/api/*");
+        //servletHandler.addServletWithMapping(StaticHandler.class, "/*");
     }
 
     @Override
@@ -92,14 +95,49 @@ public class UIAdapterREST implements UIAdaptor {
     }
 
     public static class RESTHandler extends HttpServlet {
+        private static final Logger LOGGER = LoggerFactory.getLogger(RESTHandler.class);
+        private final UIPort _core;
+
+        public RESTHandler(UIPort core) {
+            _core = core;
+        }
+
         @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            super.doGet(req, resp);
+        protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+            LOGGER.debug("GET request: " + request.getRequestURI());
+            super.doGet(request, response);
+        }
+
+
+        @Override
+        protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+            if ("/login".equals(request.getPathInfo())) {
+                String username = request.getParameter("username");
+                try {
+                    Object token = _core.login(username, request.getParameter("password"));
+                    sendResponse(response, 200, "{\"authToken\": \"" + token.toString() + "\"}");
+                } catch (AuthenticationException e) {
+                    sendResponse(response, 401, "{\"errorMessage\": \"Failed to authenticate user '" + username + "'.\"}");
+                }
+            }
+        }
+
+        private void sendResponse(HttpServletResponse response, int status, String jsonData) {
+            response.setStatus(status);
+            response.setContentType("application/json");
+            response.setContentLength(jsonData.length());
+            try {
+                response.getWriter().write(jsonData);
+            } catch (IOException e) {
+                LOGGER.info("Error while sending response", e);
+            }
         }
     }
 
 
     public static class StaticHandler extends HttpServlet {
+        private static final Logger LOGGER = LoggerFactory.getLogger(StaticHandler.class);
+
         @Override
         protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
             LOGGER.debug("GET {}", request);

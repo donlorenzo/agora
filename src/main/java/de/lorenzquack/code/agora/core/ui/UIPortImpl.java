@@ -87,6 +87,7 @@ public class UIPortImpl implements UIPort {
 
     @Override
     public Object login(String username, String password) throws AuthenticationException {
+        LOGGER.trace("login attempt for user '{}'", username);
         // SECURITY NOTE: To prevent side channel timing attacks we always evaluate both
         //                the user and the password. Additionally, when evaluating the
         //                overall success we don't use booleans to prevent java from

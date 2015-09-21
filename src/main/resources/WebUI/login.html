@@ -21,6 +21,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Agora - Login</title>
+  <script src="js/jquery-2.1.4.min.js"></script>
+  <script src="js/rest.js"></script>
   <script src="js/login.js"></script>
 </head>
 
@@ -28,8 +30,8 @@
 <h1>Agora - Login</h1>
 <form action="javascript:login()">
   <table>
-    <tr><td>User Name:</td><td><input></td></tr>
-    <tr><td>Password:</td><td><input type="password"></td></tr>
+    <tr><td>User Name:</td><td><input id="username"></td></tr>
+    <tr><td>Password:</td><td><input id="password" type="password"></td></tr>
   </table>
   <input type="submit">
 </form>
