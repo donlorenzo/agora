@@ -24,6 +24,7 @@ import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -37,6 +38,9 @@ import com.ibm.icu.text.StringPrepParseException;
  *
  */
 public class SCRAMPrimitives {
+
+    static final int NONCE_SIZE = 24;
+    static final int SALT_SIZE = 24;
 
     private static final String HMAC_SHA_1_ALGORITHM = "HmacSHA1";
 
@@ -95,12 +99,12 @@ public class SCRAMPrimitives {
         int pos = 0;
         for (int i = 0; i < bytes.length; ++i) {
             if (bytes[i] == splitByte) {
-                parts.add(subBytes(bytes, pos, i));
+                parts.add(Arrays.copyOfRange(bytes, pos, i));
                 // skip to after the splitChar
                 pos = i + 1;
             }
         }
-        parts.add(subBytes(bytes, pos, bytes.length));
+        parts.add(Arrays.copyOfRange(bytes, pos, bytes.length));
         return parts;
     }
 
@@ -108,13 +112,44 @@ public class SCRAMPrimitives {
         return Bytes.concat(a, b);
     }
 
-    private static byte[] subBytes(byte[] bytes, int startPos, int endPos) {
-        int partSize = endPos - startPos;
-        byte[] part = new byte[partSize];
-        for (int j = 0; j < partSize; ++j, ++startPos) {
-            part[j] = bytes[startPos];
+    /**
+     * My best effort at a string compare that is not susceptible to timing attacks
+     * @param untrusted string from an untrusted source
+     * @param trusted reference string from a trusted source
+     * @return true if the strings are equal. false otherwise.
+     */
+    public static boolean secureStringCompare(String untrusted, String trusted) {
+        return secureBytesCompare(normalize(untrusted), normalize(trusted));
+    }
+
+    /**
+     * My best effort at a byte[] compare that is not susceptible to timing attacks
+     * @param untrusted array of bytes from an untrusted source
+     * @param trusted reference array of bytes from a trusted source
+     * @return true if the byte arrays are equal. false otherwise.
+     */
+    public static boolean secureBytesCompare(byte[] untrusted, byte[] trusted) {
+        int trustedLength = trusted.length;
+        int untrustedLength = untrusted.length;
+        // first check for same length
+        boolean equal = (trustedLength == untrustedLength);
+        // do iteration over untrusted to not reveal length of trusted through timing
+        for (int i = 0; i < untrustedLength; ++i) {
+            byte aChar = untrusted[i];
+            byte bChar;
+            if (i < trustedLength) {
+                bChar = trusted[i];
+            } else {
+                // always make access; equal is already false so it is okay to use untrusted instead of trusted
+                bChar = untrusted[i];
+            }
+            if (aChar != bChar) {
+                equal &= false; // set false
+            } else {
+                equal |= false; // always perform operation. This is however a no-op.
+            }
         }
-        return part;
+        return equal;
     }
 
     private static byte[] intToBigEndian(int i) {

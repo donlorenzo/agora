@@ -31,13 +31,11 @@ import static de.lorenzquack.code.agora.core.crypto.sasl.SCRAMPrimitives.*;
 
 
 public class SCRAMSHA1Client implements SaslClient {
-    private static final int NONCE_SIZE = 24;
-    private static final int SALT_SIZE = 24;
 
     private final byte[] _username;
     private final byte[] _password;
     private final byte[] _clientNonce;
-    private SCRAMState _state = SCRAMState.START;
+    private SCRAMClientState _state;
     private byte[] _expectedServerSignature;
     private byte[] _clientFirstMessageBare;
 
@@ -45,6 +43,7 @@ public class SCRAMSHA1Client implements SaslClient {
         _username = normalize(username);
         _password = normalize(password);
         _clientNonce = generateNonce(NONCE_SIZE);
+        _state = SCRAMClientState.START;
     }
 
     @Override
@@ -65,15 +64,15 @@ public class SCRAMSHA1Client implements SaslClient {
                 throwError("In ERROR state due to previous error");
             case START:
                 response = handleInitialResponse(bytes);
-                _state = SCRAMState.AWAIT_SERVER_FIRST;
+                _state = SCRAMClientState.AWAIT_SERVER_FIRST;
                 break;
             case AWAIT_SERVER_FIRST:
                 response = handleServerFirstMessage(bytes);
-                _state = SCRAMState.AWAIT_SERVER_FINAL;
+                _state = SCRAMClientState.AWAIT_SERVER_FINAL;
                 break;
             case AWAIT_SERVER_FINAL:
                 handleServerFinalMessage(bytes);
-                _state = SCRAMState.COMPLETED;
+                _state = SCRAMClientState.COMPLETED;
                 break;
             case COMPLETED:
                 throwError("Spurious server message after completed handshake");
@@ -87,7 +86,7 @@ public class SCRAMSHA1Client implements SaslClient {
 
     @Override
     public boolean isComplete() {
-        return _state == SCRAMState.COMPLETED;
+        return _state == SCRAMClientState.COMPLETED;
     }
 
     @Override
@@ -115,12 +114,12 @@ public class SCRAMSHA1Client implements SaslClient {
         Arrays.fill(_clientNonce, (byte) 0);
         Arrays.fill(_expectedServerSignature, (byte) 0);
         Arrays.fill(_clientFirstMessageBare, (byte) 0);
-        _state = SCRAMState.DISPOSED;
+        _state = SCRAMClientState.DISPOSED;
     }
 
-    private void throwError(String message) throws SaslException {
-        _state = SCRAMState.ERROR;
-        throw new SaslException(message);
+    private void throwError(String errorMessage) throws SaslException {
+        _state = SCRAMClientState.ERROR;
+        throw new SaslException(errorMessage);
     }
 
     private byte[] handleInitialResponse(byte[] bytes) throws SaslException {
@@ -232,19 +231,6 @@ public class SCRAMSHA1Client implements SaslClient {
         return Integer.parseInt(Arrays.toString(Arrays.copyOfRange(bytes, 2, length)));
     }
 
-
-    private enum SCRAMState {
-        ERROR,
-        START,
-        AWAIT_SERVER_FIRST,
-        AWAIT_SERVER_FINAL,
-        AWAIT_CLIENT_FIRST,
-        AWAIT_CLIENT_FINAL,
-        COMPLETED,
-        DISPOSED,
-    }
-
-
     private class ByteArrayBuilder {
         private List<byte[]> _arrays = new ArrayList<>();
         private int _size;
@@ -272,5 +258,14 @@ public class SCRAMSHA1Client implements SaslClient {
             return retValue;
             */
         }
+    }
+
+    enum SCRAMClientState {
+        ERROR,
+        START,
+        AWAIT_SERVER_FIRST,
+        AWAIT_SERVER_FINAL,
+        COMPLETED,
+        DISPOSED,
     }
 }
